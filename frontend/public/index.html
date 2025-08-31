@@ -33,4 +33,23 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  <script>
+    window.tailwind = {
+      config: {
+        safelist: [
+          /* dark layout/colors */
+          "bg-gray-900", "text-gray-100", "text-slate-200", "text-slate-300", "text-slate-400",
+          "bg-slate-800/60", "bg-slate-900/60", "bg-[#0f1115]", "border", "border-white/5", "border-white/10",
+          "shadow-lg", "shadow-black/30", "rounded-2xl", "rounded-xl", "rounded-lg",
+          /* buttons & accents */
+          "bg-indigo-600", "hover:bg-indigo-500", "bg-slate-700", "hover:bg-slate-600", "text-slate-100",
+          "bg-emerald-900/40", "text-emerald-300", "bg-rose-900/40", "text-rose-300", "accent-indigo-500",
+          /* layout helpers */
+          "min-h-screen", "p-4", "max-w-6xl", "mx-auto", "space-y-4", "grid", "gap-4", "md:grid-cols-3", "w-full",
+          "overflow-hidden", "max-h-56", "flex", "items-center", "justify-between", "text-sm", "text-xs", "font-mono"
+        ]
+      }
+    }
+  </script>
+
 </html>
