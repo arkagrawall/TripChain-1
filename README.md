@@ -27,15 +27,15 @@ Our solution bridges the gap between manual surveys and real-time mobility insig
 
 ## 🛠️ Tech Stack
 
-| Layer                   | Technology / Tools              |
-| ----------------------- | ------------------------------- |
-| Frontend                | React.js                        |
-| Backend                 | Node.js, Express.js             |
-| Database                | MongoDB, Firebase               |
-| Sensors & Detection     | Gyroscope & GPS sensors         |
-| Multilingual APIs       | Bhashini Initiative             |
-| Mapping & Visualization | Leaflet.js, Mapping APIs        |
-| Hosting                 | Cloud-based (AWS / GCP / Azure) |
+| Layer                   | Technology / Tools       |
+| ----------------------- | ------------------------ |
+| Frontend                | React.js                 |
+| Backend                 | Node.js, Express.js      |
+| Database                | MongoDB, Firebase        |
+| Sensors & Detection     | Gyroscope & GPS sensors  |
+| Multilingual APIs       | Bhashini Initiative      |
+| Mapping & Visualization | Leaflet.js, Mapping APIs |
+| Hosting                 | Cloud-based (Vercel.app) |
 
 ---
 

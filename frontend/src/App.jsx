@@ -3,7 +3,6 @@ import {
   MapContainer,
   TileLayer,
   Marker,
-  CircleMarker,
   Polyline,
   Popup,
 } from "react-leaflet";
@@ -11,7 +10,6 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { io } from "socket.io-client";
 
-// --- Fix Leaflet default marker icons (for fallback marker) ---
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -22,7 +20,6 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-// --- Config (override in public/index.html if you like) ---
 const SOCKET_URL =
   (typeof window !== "undefined" && window.SOCKET_URL) ||
   "https://trip-chain.vercel.app/";
@@ -34,7 +31,6 @@ const socket = io(SOCKET_URL, {
   withCredentials: true,
 });
 
-// Haversine distance (meters)
 function haversineMeters(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const toRad = (d) => (d * Math.PI) / 180;
@@ -46,7 +42,6 @@ function haversineMeters(lat1, lon1, lat2, lon2) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-// Auto-tune thresholds by speed
 function getAutoParams(speedKmh) {
   if (speedKmh < 5) return { cooldown: 2500, sensitivity: 10 };
   if (speedKmh < 25) return { cooldown: 1800, sensitivity: 12 };
@@ -54,7 +49,6 @@ function getAutoParams(speedKmh) {
   return { cooldown: 800, sensitivity: 16 };
 }
 
-// Custom icons
 const userIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
@@ -78,18 +72,12 @@ const bumpIcon = new L.Icon({
 });
 
 export default function App() {
-  const [position, setPosition] = useState({ lat: 28.6139, lon: 77.209 }); // Delhi default
+  const [position, setPosition] = useState({ lat: 28.6139, lon: 77.209 });
   const [speedKmh, setSpeedKmh] = useState(0);
-
-  // Motion / bumps
   const [accel, setAccel] = useState({ x: 0, y: 0, z: 0, linear: 0 });
   const [bumps, setBumps] = useState([]);
   const [detecting, setDetecting] = useState(false);
-
-  // Networking
   const [connected, setConnected] = useState(false);
-
-  // Sensitivity / cooldown controls
   const [autoTune, setAutoTune] = useState(true);
   const [manualSensitivity, setManualSensitivity] = useState(12);
   const [manualCooldownMs, setManualCooldownMs] = useState(2000);
@@ -99,16 +87,13 @@ export default function App() {
   const effectiveCooldown = autoTune ? autoCooldown : manualCooldownMs;
   const effectiveSensitivity = autoTune ? autoSensitivity : manualSensitivity;
 
-  // Refs
-  const lastGeoRef = useRef(null); // {lat, lon, t}
+  const lastGeoRef = useRef(null);
   const motionHandlerRef = useRef(null);
   const lastBumpRef = useRef(0);
 
-  // Path + highlighted segments
-  const [path, setPath] = useState([]); // [[lat, lon], ...]
-  const [redSegments, setRedSegments] = useState([]); // [ [[lat,lon],...], ... ]
+  const [path, setPath] = useState([]);
+  const [redSegments, setRedSegments] = useState([]);
 
-  // Socket listeners
   useEffect(() => {
     const onConnect = () => setConnected(true);
     const onDisconnect = () => setConnected(false);
@@ -123,7 +108,6 @@ export default function App() {
     };
   }, []);
 
-  // Geolocation tracking + path building
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
     const opts = { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 };
@@ -135,18 +119,16 @@ export default function App() {
 
       setPosition(next);
 
-      // Append to path (dedupe identical)
       setPath((prev) => {
         const last = prev[prev.length - 1];
         if (!last || last[0] !== next.lat || last[1] !== next.lon) {
           const updated = [...prev, [next.lat, next.lon]];
-          if (updated.length > 10000) updated.shift(); // cap to avoid memory issues
+          if (updated.length > 10000) updated.shift();
           return updated;
         }
         return prev;
       });
 
-      // Speed calculation (prefer native, else derive)
       let spdMs = typeof speed === "number" && speed >= 0 ? speed : null;
       if (spdMs == null && lastGeoRef.current) {
         const dt = (now - lastGeoRef.current.t) / 1000;
@@ -176,7 +158,6 @@ export default function App() {
     return () => navigator.geolocation.clearWatch(id);
   }, [speedKmh]);
 
-  // iOS motion permission helper
   const requestMotionPermission = async () => {
     const DM = window.DeviceMotionEvent;
     if (DM && typeof DM.requestPermission === "function") {
@@ -190,7 +171,6 @@ export default function App() {
     return true;
   };
 
-  // Build a red segment around a strong bump (~30 m back along path)
   const addRedSegmentNear = (centerLat, centerLon) => {
     const MAX_BACK_METERS = 30;
     if (path.length < 2) return;
@@ -199,14 +179,13 @@ export default function App() {
     for (let i = path.length - 1; i > 0; i--) {
       const [aLat, aLon] = path[i];
       const [bLat, bLon] = path[i - 1];
-      seg.unshift([aLat, aLon]); // older → newer
+      seg.unshift([aLat, aLon]);
       acc += haversineMeters(aLat, aLon, bLat, bLon);
       if (acc >= MAX_BACK_METERS) break;
     }
     if (seg.length >= 2) setRedSegments((prev) => [...prev, seg]);
   };
 
-  // Motion sensor → bump detection
   useEffect(() => {
     if (!detecting) {
       if (motionHandlerRef.current) {
@@ -222,7 +201,7 @@ export default function App() {
       const y = g.y || 0;
       const z = g.z || 0;
       const total = Math.sqrt(x * x + y * y + z * z);
-      const linear = Math.abs(total - 9.81); // approx gravity removal
+      const linear = Math.abs(total - 9.81);
       setAccel({ x, y, z, linear });
 
       const now = Date.now();
@@ -242,7 +221,6 @@ export default function App() {
         setBumps((prev) => [bump, ...prev]);
         socket.emit("send-bump", bump);
 
-        // Highlight strong bumps
         const highThreshold = Math.max(16, effectiveSensitivity + 3);
         if (linear >= highThreshold) {
           addRedSegmentNear(position.lat, position.lon);
@@ -278,25 +256,22 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4">
       <div className="max-w-5xl mx-auto space-y-4">
-        {/* Header */}
         <header className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">TripChain</h1>
         </header>
-
         <section className="grid md:grid-cols-3 gap-4">
-          {/* Map */}
           <div className="md:col-span-2 bg-[#0f1115] rounded-2xl shadow p-3 border border-white/5">
             <div className="rounded-xl overflow-hidden" style={{ height: 500 }}>
               <MapContainer
-                center={[position.lat, position.lon]}
-                zoom={16}
+                center={[27.4139, 80.209]}
+                zoom={7}
                 style={{ height: "100%", width: "100%" }}
-                attributionControl={false} // watermark removed for dev
+                attributionControl={false}
               >
-                {/* Dark detailed tiles (Carto Dark Matter) */}
-                <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-
-                {/* User marker (blue) */}
+                <TileLayer
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                  attribution='Tiles © <a href="https://www.esri.com/">Esri</a>'
+                />
                 <Marker position={[position.lat, position.lon]} icon={userIcon}>
                   <Popup>
                     📍 You are here
@@ -304,16 +279,12 @@ export default function App() {
                     Speed: {speedKmh.toFixed(1)} km/h
                   </Popup>
                 </Marker>
-
-                {/* Travelled path (cyan) */}
                 {path.length >= 2 && (
                   <Polyline
                     positions={path}
                     pathOptions={{ color: "#22d3ee", weight: 5, opacity: 0.9 }}
                   />
                 )}
-
-                {/* Red segments for high bumps */}
                 {redSegments.map((seg, i) => (
                   <Polyline
                     key={`hot-${i}`}
@@ -321,8 +292,6 @@ export default function App() {
                     pathOptions={{ color: "#ef4444", weight: 7, opacity: 0.95 }}
                   />
                 ))}
-
-                {/* Bump markers (red icons) */}
                 {bumps.map((b) => (
                   <Marker
                     key={b.id}
@@ -341,10 +310,7 @@ export default function App() {
               </MapContainer>
             </div>
           </div>
-
-          {/* Controls */}
           <div className="bg-[#0f1115] rounded-2xl shadow p-4 space-y-4 border border-white/5">
-            {/* Start/Stop + quick stats */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {!detecting ? (
@@ -376,8 +342,6 @@ export default function App() {
                 </div>
               </div>
             </div>
-
-            {/* X/Y/Z counters */}
             <div className="text-sm grid grid-cols-3 gap-2">
               <div className="bg-slate-800/60 rounded-xl p-3 text-center border border-white/5">
                 <div className="text-slate-400">X</div>
@@ -392,8 +356,6 @@ export default function App() {
                 <div className="font-mono">{accel.z.toFixed(2)}</div>
               </div>
             </div>
-
-            {/* Auto-Tune */}
             <div className="flex items-center justify-between bg-slate-800/60 rounded-xl p-3 border border-white/5">
               <div>
                 <div className="font-medium">Auto-Tune by Speed</div>
@@ -413,8 +375,6 @@ export default function App() {
                 </div>
               </label>
             </div>
-
-            {/* Manual controls */}
             <div className={autoTune ? "opacity-50 pointer-events-none" : ""}>
               <label className="block text-sm font-medium mb-1">
                 Sensitivity: {manualSensitivity}
@@ -429,8 +389,6 @@ export default function App() {
                 className="w-full accent-indigo-500"
               />
             </div>
-
-            {/* Bumps list */}
             <div className="bg-slate-800/60 rounded-xl p-3 border border-white/5">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Bumps</h3>
