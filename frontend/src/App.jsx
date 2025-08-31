@@ -25,7 +25,7 @@ L.Icon.Default.mergeOptions({
 // --- Config (override in public/index.html if you like) ---
 const SOCKET_URL =
   (typeof window !== "undefined" && window.SOCKET_URL) ||
-  "http://192.168.1.23:5000";
+  "https://trip-chain.vercel.app/";
 
 const socket = io(SOCKET_URL, {
   transports: ["websocket"],
