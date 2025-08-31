@@ -280,16 +280,7 @@ export default function App() {
       <div className="max-w-5xl mx-auto space-y-4">
         {/* Header */}
         <header className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">🚗 Road Bump Detector</h1>
-          <div
-            className={`px-3 py-1 rounded-full text-sm ${
-              connected
-                ? "bg-emerald-900/40 text-emerald-300"
-                : "bg-rose-900/40 text-rose-300"
-            }`}
-          >
-            {connected ? "Connected" : "Offline"}
-          </div>
+          <h1 className="text-2xl font-semibold">TripChain</h1>
         </header>
 
         <section className="grid md:grid-cols-3 gap-4">
@@ -407,7 +398,7 @@ export default function App() {
               <div>
                 <div className="font-medium">Auto-Tune by Speed</div>
                 <div className="text-xs text-slate-400">
-                  Adjusts cooldown & sensitivity from GPS speed
+                  Adjusts sensitivity from GPS speed
                 </div>
               </div>
               <label className="inline-flex items-center cursor-pointer">
@@ -437,21 +428,6 @@ export default function App() {
                 onChange={(e) => setManualSensitivity(Number(e.target.value))}
                 className="w-full accent-indigo-500"
               />
-
-              <div className="mt-3">
-                <label className="block text-sm font-medium mb-1">
-                  Cooldown (ms): {manualCooldownMs}
-                </label>
-                <input
-                  type="range"
-                  min={500}
-                  max={5000}
-                  step={100}
-                  value={manualCooldownMs}
-                  onChange={(e) => setManualCooldownMs(Number(e.target.value))}
-                  className="w-full accent-indigo-500"
-                />
-              </div>
             </div>
 
             {/* Bumps list */}
@@ -486,11 +462,8 @@ export default function App() {
             </div>
           </div>
         </section>
-
-        {/* Footer */}
         <footer className="text-xs text-slate-400">
-          Dark tiles: Carto “Dark Matter”. For production, add proper
-          attribution.
+          “From journeys to insights, from insights to smarter planning.”
         </footer>
       </div>
     </div>
