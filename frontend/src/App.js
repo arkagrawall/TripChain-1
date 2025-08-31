@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000", { transports: ["websocket"] }); // adjust if you changed port
+const socket = io("https://trip-chain.vercel.app/", { transports: ["websocket"] }); // adjust if you changed port
 
 function uid() {
   return (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
