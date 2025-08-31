@@ -336,10 +336,6 @@ export default function App() {
                 <div className="text-sm text-slate-200">
                   Speed: <b>{speedKmh.toFixed(1)} km/h</b>
                 </div>
-                <div className="text-xs text-slate-400">
-                  Cooldown: <b>{effectiveCooldown} ms</b> · Sensitivity:{" "}
-                  <b>{effectiveSensitivity}</b>
-                </div>
               </div>
             </div>
             <div className="text-sm grid grid-cols-3 gap-2">
